@@ -10,8 +10,9 @@ import {
   ThemingProps,
   useMultiStyleConfig,
   useStyles,
+  useTheme,
 } from "@chakra-ui/system"
-import { cx, runIfFn, __DEV__ } from "@chakra-ui/utils"
+import { callAll, cx, runIfFn, __DEV__ } from "@chakra-ui/utils"
 import * as React from "react"
 import { PopoverProvider, usePopoverContext } from "./popover-context"
 import { PopoverTransition, PopoverTransitionProps } from "./popover-transition"
@@ -39,7 +40,8 @@ export const Popover: React.FC<PopoverProps> = (props) => {
   const styles = useMultiStyleConfig("Popover", props)
 
   const { children, ...rest } = omitThemingProps(props)
-  const context = usePopover(rest)
+  const theme = useTheme()
+  const context = usePopover({ ...rest, direction: theme.direction })
 
   return (
     <PopoverProvider value={context}>
@@ -56,6 +58,22 @@ export const Popover: React.FC<PopoverProps> = (props) => {
 
 if (__DEV__) {
   Popover.displayName = "Popover"
+}
+
+/**
+ * PopoverAnchor is element that is used as the positioning reference
+ * for the popover.
+ */
+export const PopoverAnchor: React.FC = (props) => {
+  // enforce a single child
+  const child: any = React.Children.only(props.children)
+  const { getAnchorProps } = usePopoverContext()
+
+  return React.cloneElement(child, getAnchorProps(child.props, child.ref))
+}
+
+if (__DEV__) {
+  PopoverAnchor.displayName = "PopoverAnchor"
 }
 
 /**
@@ -81,7 +99,8 @@ export const PopoverContent = forwardRef<PopoverContentProps, "section">(
   (props, ref) => {
     const { rootProps, ...contentProps } = props
 
-    const { getPopoverProps, getPopoverPositionerProps } = usePopoverContext()
+    const { getPopoverProps, getPopoverPositionerProps, onAnimationComplete } =
+      usePopoverContext()
 
     const styles = useStyles()
     const contentStyles: SystemStyleObject = {
@@ -99,6 +118,10 @@ export const PopoverContent = forwardRef<PopoverContentProps, "section">(
       >
         <PopoverTransition
           {...getPopoverProps(contentProps, ref)}
+          onAnimationComplete={callAll(
+            onAnimationComplete,
+            contentProps.onAnimationComplete,
+          )}
           className={cx("chakra-popover__content", props.className)}
           __css={contentStyles}
         />
@@ -181,15 +204,13 @@ export type PopoverCloseButtonProps = CloseButtonProps
 
 export const PopoverCloseButton: React.FC<CloseButtonProps> = (props) => {
   const { onClose } = usePopoverContext()
+  const styles = useStyles()
   return (
     <CloseButton
       size="sm"
       onClick={onClose}
-      position="absolute"
-      borderRadius="md"
-      top="0.25rem"
-      insetEnd="0.5rem"
-      padding="0.5rem"
+      className={cx("chakra-popover__close-btn", props.className)}
+      __css={styles.closeButton}
       {...props}
     />
   )

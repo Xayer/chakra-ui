@@ -10,7 +10,7 @@ import {
   useMultiStyleConfig,
   HTMLChakraProps,
 } from "@chakra-ui/system"
-import { cx, mergeWith, split, __DEV__ } from "@chakra-ui/utils"
+import { cx, mergeWith, split, __DEV__, dataAttr } from "@chakra-ui/utils"
 import * as React from "react"
 
 type Omitted = "disabled" | "required" | "readOnly" | "size"
@@ -23,11 +23,10 @@ export interface SelectFieldProps
 export const SelectField = forwardRef<SelectFieldProps, "select">(
   (props, ref) => {
     const { children, placeholder, className, ...rest } = props
-    const ownProps = useFormControl<HTMLSelectElement>(rest)
 
     return (
       <chakra.select
-        {...ownProps}
+        {...rest}
         ref={ref}
         className={cx("chakra-select", className)}
       >
@@ -122,6 +121,8 @@ export const Select = forwardRef<SelectProps, "select">((props, ref) => {
 
   const [layoutProps, otherProps] = split(rest, layoutPropNames as any[])
 
+  const ownProps = useFormControl(otherProps)
+
   const rootStyles: SystemStyleObject = {
     width: "100%",
     height: "fit-content",
@@ -129,10 +130,11 @@ export const Select = forwardRef<SelectProps, "select">((props, ref) => {
     color,
   }
 
-  const fieldStyles: SystemStyleObject = mergeWith({}, styles.field, {
-    paddingEnd: "2rem",
-    _focus: { zIndex: "unset" },
-  })
+  const fieldStyles: SystemStyleObject = mergeWith(
+    { paddingEnd: "2rem" },
+    styles.field,
+    { _focus: { zIndex: "unset" } },
+  )
 
   return (
     <chakra.div
@@ -146,14 +148,14 @@ export const Select = forwardRef<SelectProps, "select">((props, ref) => {
         height={h ?? height}
         minH={minH ?? minHeight}
         placeholder={placeholder}
-        {...otherProps}
+        {...ownProps}
         __css={fieldStyles}
       >
         {props.children}
       </SelectField>
 
       <SelectIcon
-        data-disabled={props.isDisabled}
+        data-disabled={dataAttr(ownProps.disabled)}
         {...((iconColor || color) && { color: iconColor || color })}
         __css={styles.icon}
         {...(iconSize && { fontSize: iconSize })}

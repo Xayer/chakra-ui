@@ -13,10 +13,10 @@ let imageOnload: any = null
  */
 function trackImageOnload() {
   Object.defineProperty(window.Image.prototype, "onload", {
-    get: function () {
+    get() {
       return this._onload
     },
-    set: function (fn) {
+    set(fn) {
       imageOnload = fn
       this._onload = fn
     },
@@ -37,6 +37,12 @@ test("renders placeholder first, before image load", async () => {
   render(<Image src={src} fallbackSrc={fallbackSrc} />)
 
   expect(screen.getByRole("img")).toHaveAttribute("src", fallbackSrc)
+})
+
+test("renders image if there is no fallback behavior defined", async () => {
+  render(<Image src={src} />)
+
+  expect(screen.getByRole("img")).toHaveAttribute("src", src)
 })
 
 /**

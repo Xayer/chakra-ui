@@ -167,6 +167,11 @@ export interface AvatarProps
     AvatarOptions,
     ThemingProps<"Avatar"> {
   iconLabel?: string
+  /**
+   * If `true`, opt out of the avatar's `fallback` logic and
+   * renders the `img` at all times.
+   */
+  ignoreFallback?: boolean
 }
 
 /**
@@ -178,6 +183,7 @@ export const Avatar = forwardRef<AvatarProps, "span">((props, ref) => {
 
   const {
     src,
+    srcSet,
     name,
     showBorder,
     borderRadius = "full",
@@ -188,6 +194,7 @@ export const Avatar = forwardRef<AvatarProps, "span">((props, ref) => {
     loading,
     children,
     borderColor,
+    ignoreFallback,
     ...rest
   } = omitThemingProps(props)
 
@@ -212,6 +219,7 @@ export const Avatar = forwardRef<AvatarProps, "span">((props, ref) => {
       <StylesProvider value={styles}>
         <AvatarImage
           src={src}
+          srcSet={srcSet}
           loading={loading}
           onError={onError}
           getInitials={getInitials}
@@ -219,6 +227,7 @@ export const Avatar = forwardRef<AvatarProps, "span">((props, ref) => {
           borderRadius={borderRadius}
           icon={icon}
           iconLabel={iconLabel}
+          ignoreFallback={ignoreFallback}
         />
         {children}
       </StylesProvider>
@@ -239,6 +248,7 @@ interface AvatarImageProps
 const AvatarImage: React.FC<AvatarImageProps> = (props) => {
   const {
     src,
+    srcSet,
     onError,
     getInitials,
     name,
@@ -246,12 +256,13 @@ const AvatarImage: React.FC<AvatarImageProps> = (props) => {
     loading,
     iconLabel,
     icon = <DefaultIcon />,
+    ignoreFallback,
   } = props
 
   /**
    * use the image hook to only show the image when it has loaded
    */
-  const status = useImage({ src, onError })
+  const status = useImage({ src, onError, ignoreFallback })
 
   const hasLoaded = status === "loaded"
 
@@ -285,6 +296,7 @@ const AvatarImage: React.FC<AvatarImageProps> = (props) => {
   return (
     <chakra.img
       src={src}
+      srcSet={srcSet}
       alt={name}
       className="chakra-avatar__img"
       loading={loading}

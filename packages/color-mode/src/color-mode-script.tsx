@@ -1,40 +1,40 @@
 import * as React from "react"
-import { ColorMode } from "./color-mode-provider"
+import { ColorMode, ConfigColorMode } from "./color-mode-provider"
+import { root } from "./color-mode.utils"
 
-type Mode = ColorMode | "system" | undefined
-
-function setScript(initialValue: Mode) {
+export function setScript(initialValue: ConfigColorMode) {
   const mql = window.matchMedia("(prefers-color-scheme: dark)")
   const systemPreference = mql.matches ? "dark" : "light"
 
-  let persistedPreference: Mode
+  let persistedPreference: ColorMode = systemPreference
 
   try {
-    persistedPreference = localStorage.getItem("chakra-ui-color-mode") as Mode
+    persistedPreference = localStorage.getItem(
+      "chakra-ui-color-mode",
+    ) as ColorMode
   } catch (error) {
     console.log(
       "Chakra UI: localStorage is not available. Color mode persistence might not work as expected",
     )
   }
 
-  const isInStorage = typeof persistedPreference === "string"
+  let colorMode: ColorMode
 
-  let colorMode: Mode
-
-  if (isInStorage) {
+  if (persistedPreference) {
     colorMode = persistedPreference
+  } else if (initialValue === "system") {
+    colorMode = systemPreference
   } else {
-    colorMode = initialValue === "system" ? systemPreference : initialValue
+    colorMode = initialValue ?? systemPreference
   }
 
   if (colorMode) {
-    const root = document.documentElement
-    root.style.setProperty("--chakra-ui-color-mode", colorMode)
+    root.set(colorMode)
   }
 }
 
 interface ColorModeScriptProps {
-  initialColorMode?: Mode
+  initialColorMode?: ConfigColorMode
   /**
    * Optional nonce that will be passed to the created `<script>` tag.
    */

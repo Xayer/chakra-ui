@@ -1,8 +1,8 @@
 import * as React from "react"
-import { Image } from "../src"
+import { Image, Img } from "../src"
 
 export default {
-  title: "Image",
+  title: "Components / Media and Icons / Image",
 }
 
 export const Basic = () => (
@@ -85,5 +85,35 @@ export const Bug = () => {
       <button onClick={onClick}>set image</button>
       <p>src set to Avatar: {src}</p>
     </div>
+  )
+}
+
+export const WithSrcSet = () => {
+  const firstRef = React.useRef<HTMLImageElement>(null)
+  const secondRef = React.useRef<HTMLImageElement>(null)
+
+  const firstLog = (e: any) => {
+    console.log(1, "Image", e.type, firstRef.current?.currentSrc)
+  }
+
+  const secondLog = (e: any) => {
+    console.log(2, "Img", e.type, secondRef.current?.currentSrc)
+  }
+
+  return (
+    <>
+      <Image
+        ref={firstRef}
+        srcSet="//fake.image/ 1x"
+        onError={firstLog}
+        onLoad={firstLog}
+      />
+      <Img
+        ref={secondRef}
+        srcSet="//lorempixel.com/100/100/ 1x"
+        onError={secondLog}
+        onLoad={secondLog}
+      />
+    </>
   )
 }
